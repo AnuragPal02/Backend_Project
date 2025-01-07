@@ -1,57 +1,45 @@
-import { v2 as cloudinary } from 'cloudinary';
-import fs from "fs"
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs/promises"; // Use promises-based fs for async operations
 
+// Configuration
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-    // Configuration
-    cloudinary.config({ 
-        cloud_name: process.env.CLOUDINARY_NAME, 
-        api_key: process.env.CLOUDINARY_API_KEY, 
-        api_secret: process.env.CLOUDINARY_API_SECRET // Click 'View API Keys' above to copy your API secret
-    });
+const uploadOnCloudinary = async (localFilePath) => {
+    try {
+        if (!localFilePath) {
+            console.error("Local file path is undefined or null.");
+            throw new Error("Local file path is required for upload.");
+        }
 
-    const uploadOnCloudinary = async (localFilePath) =>{
-         try{
-            if(localFilePath == NULL) return NULL;
-         const response = await cloudinary.uploader.upload(localFilePath,{
-                resource_type : "auto"
-            });
-            console.log("file is uploaded..",response.url);
-         }catch{
-            fs.unlinkSync(localFilePath); // remove the locally save temporary file as the upload 
-            // operation is failed 
-         }
+        // Upload file to Cloudinary
+        const response = await cloudinary.uploader.upload(localFilePath, {
+            resource_type: "auto",
+        });
+
+        // Remove the temporary file after successful upload
+        await fs.unlink(localFilePath);
+        console.log("Temporary file removed:", localFilePath);
+
+        // Return the response object for further use
+        return response;
+    } catch (error) {
+        console.error("Cloudinary upload failed:", error.message);
+
+        // Attempt to remove the temporary file if it exists
+        try {
+            await fs.unlink(localFilePath);
+            console.log("Temporary file removed after upload failure:", localFilePath);
+        } catch (fsError) {
+            console.error("Failed to remove temporary file:", fsError.message);
+        }
+
+        // Rethrow the error so the calling function knows upload failed
+        throw new Error("Cloudinary upload failed.");
     }
+};
 
-    export {uploadOnCloudinary}
-    
-//     // Upload an image
-//      const uploadResult = await cloudinary.uploader
-//        .upload(
-//            'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg', {
-//                public_id: 'shoes',
-//            }
-//        )
-//        .catch((error) => {
-//            console.log(error);
-//        });
-    
-//     console.log(uploadResult);
-    
-//     // Optimize delivery by resizing and applying auto-format and auto-quality
-//     const optimizeUrl = cloudinary.url('shoes', {
-//         fetch_format: 'auto',
-//         quality: 'auto'
-//     });
-    
-//     console.log(optimizeUrl);
-    
-//     // Transform the image: auto-crop to square aspect_ratio
-//     const autoCropUrl = cloudinary.url('shoes', {
-//         crop: 'auto',
-//         gravity: 'auto',
-//         width: 500,
-//         height: 500,
-//     });
-    
-//     console.log(autoCropUrl);    
-// })();
+export { uploadOnCloudinary };

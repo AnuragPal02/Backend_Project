@@ -4,7 +4,7 @@ import bcrypt from "bcrypt"
  
 const userSchema = new Schema(
     {
-        name:{
+        username:{
             type : String,
             required: true,
             unique:true,
@@ -33,10 +33,16 @@ const userSchema = new Schema(
         coverImage : {
              type : String // cloudary int 
         },
-        watchHistory : {
-             type : Schema.Types.ObjectId,
-             ref : "Video"
-        },
+        // watchHistory : {
+        //      type : Schema.Types.ObjectId,
+        //      ref : "Video"
+        // }, // this is from video
+        watchHistory: [{ // this is from chatgpt
+            type: Schema.Types.ObjectId,
+            ref: "Video",
+            default: []
+        }],
+        
         password : {
              type : String, 
              required: [true, 'password is required'],
