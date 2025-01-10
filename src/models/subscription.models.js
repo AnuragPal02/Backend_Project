@@ -6,7 +6,7 @@ import mongoose, { Schema } from "mongoose";
             subscriber:{
                 type: Schema.Types.ObjectId,
                 ref: "User"
-            },
+            }, 
             channel:{
                 type: Schema.Types.ObjectId,
                 ref : "User"
